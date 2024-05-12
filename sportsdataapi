@@ -1,0 +1,34 @@
+import requests
+import pandas as pd
+from datetime import datetime, timedelta
+
+# Function to fetch games by date
+def fetch_games(date, competition='EPL'):
+    base_url = "https://api.sportsdata.io/v4/soccer/scores/json/GamesByDate"
+    api_key = "1b3e817084cf4baa8fa296196d0093b9"
+    url = f"{base_url}/{competition}/{date}?key={api_key}"
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+# Calculate dates for the last 30 days
+start_date = datetime.now() - timedelta(days=30)
+dates = [start_date + timedelta(days=x) for x in range(30)]
+
+# List to hold all games data
+all_games = []
+
+# Loop through each date, fetch data and append to the list
+for date in dates:
+    date_str = date.strftime('%Y-%m-%d')
+    games = fetch_games(date_str)
+    if games:
+        all_games.extend(games)
+
+# Convert the list of games to a DataFrame
+df = pd.DataFrame(all_games)
+
+# Saving the DataFrame to a CSV file
+df.to_csv('soccer_games_last_30_days.csv', index=False)
